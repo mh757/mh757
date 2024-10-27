@@ -1,6 +1,14 @@
 - 👋 Hi, I’m Marcel Hudiani.
+
+- 🌱 I’m currently learning
+	- Numerical simulation for Stochastic Differential Equations (SDE).
+	- Statistical machine learning (enrolled in a class Fall 2024).
+
+- **sde** is a project on numerical simulation of SDE that I started. The codes are written in MATLAB.
+
+- **ml** is a folder with standalone codes I worked on for a statistical ML class. The codes are written in R.
+
 <!-- - 👀 I’m interested in ... -->
-- 🌱 I’m currently learning numerical methods for stochastic differential equations, statistical machine learning, and NN/DL/LSTM.
 <!-- - 💞️ I’m looking to collaborate on ... -->
 <!-- - 📫 How to reach me ... -->
 <!-- - 😄 Pronouns: ... -->
