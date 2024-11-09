@@ -1,39 +1,64 @@
+%----------------------------------------------- 
+% 1-D Zero Range Particle dynamics
+% in a Regularized Wiener Random Media.
+%
+% Euler-Maruyama simulation.
 %-----------------------------------------------
-% 1-D ZRP in Regularized, Wiener Random Media 
-% 1-D Particle dynamics
-%-----------------------------------------------
+clf;
 
-% 1-D Random medium (spatial)
-W = bm(0, 1, 'StartTime', -1000);
+% Perfect seed (periodic traps)
+rng(1)
 
-% Set seed and Random Number Generator
-rng(10203,'twister')
+%% Medium
+Xstart = 0; Xend = 1; N = 100000;
+Xrange = Xstart - Xend;
+epsilon = Xrange/N; % regularizing width
 
-% Simulate W to obtain realization so that we may treat them as functions.
-dx       = 1 / 10;
-nPeriods = 20000;
-X        = nPeriods * dx;
-nPaths   = 50;    % # of simulated paths (50 data points for ML)
-sampleTimes = cumsum([W.StartTime; dx(ones(nPeriods,1))]);
-Wx = W.simulate(nPeriods, 'DeltaTime', dx, 'nTrials', nPaths, 'Z', z);
+% LPSX medium on the Torus = [0, 1].
+W = WPmedium(N);
 
-%TODO: What's z? z = Example_StratifiedRNG(nPaths, sampleTimes);
+%W.eval(1);
+%disp(W.eval(1)*2);
+%W.eval(2);
+%W.eval(0.2);
+%W.eval(-0.2);
+%W.eval(-0.3);
+%W.eval(-0.17);
+%W.eval(-0.173);
+%W.eval(-0.175);
+%disp(W.eval(0.8) - W.eval(1));
+%W.eval(0.8);
 
+plot(W.get_sampling_times(), W.get_path(), 'r-','LineWidth', 2)
+xlabel('x_i', 'FontWeight', 'normal')
+ylabel('W_i', 'FontWeight', 'normal')
+grid on
 
-%--------------------------------------
-% Particle 
-%--------------------------------------
+% Showing extension
+figure;
+plot([-Xrange:epsilon:Xrange], W.extend(), 'r-', 'LineWidth', 2)
+xlabel('x_i', 'FontWeight', 'normal')
+ylabel('W_i', 'FontWeight', 'normal')
+grid on
 
-% Regularization of the medium
-eReg = 0.01;
-W_reg = (W(x+eReg) - W(x-eReg))/eReg
+%% Speed change
+%psi = @(t,x) 3 + sin(x) + cos(t);
 
-% Speed change
-psi = @(t,x) 3 + sin(x) + cos(t);
+%% Euler-Maruyama
+Xzero = 0;
+L = 10000; T = 100; dt = T/L;
 
-% Particle dynamics is an SDE:
-% dxt = dBt - 1/2 W_reg(xt) * psi dt
-F = @(t,x) -0.5 * psi;
-G = @(t,x) 1;
+Xem = zeros(1,L+1);
+Xem(1) = Xzero;
+for j = 1:L
+    dBt = sqrt(dt) * randn; % dBt
 
-xt_sde = sde(F, G);
+    % 1-D Brox with LPSX medium
+    Xem(j+1) = Xem(j) + dBt - W.d_dx(Xem(j), epsilon) * dt;
+end
+
+figure;
+plot([0:dt:T], Xem, 'k-', 'LineWidth', 1)
+xlabel('t', FontSize=12)
+ylabel('Xem', 'FontWeight', 'normal')
+grid on

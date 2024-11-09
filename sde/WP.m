@@ -19,7 +19,7 @@ classdef WP
     end
 
     methods
-        function obj = WP(L,T)
+        function obj = WP(x,L,T)
             % Construct an instance of this class
             obj.L = L;
             obj.T = T;
@@ -31,10 +31,17 @@ classdef WP
             obj.path = cumsum(obj.dW);
 
             % W(0) = 0 for standard BM
-            obj.path = [0, obj.path];
+            obj.path = [x, obj.path];
+        end
+
+        function print(obj)
+            fprintf("BM length (incl. t=0) = %d, up to T = %.2f\n", ...
+                obj.L, obj.T)
+            fprintf("BM time increment = %.4f\n", obj.dt)
         end
 
         function W = get_path(obj)
+            % public class
             W = obj.path;
         end
 
@@ -42,32 +49,27 @@ classdef WP
             sampledTimes = 0:obj.dt:obj.T;
         end
 
-        function [W, err] = integrate(obj, integrand, varargin)
+        function [W, err] = integrate(obj, integrand, IsStratonovich)
             % Programming Exercise 4.2:
-            % -------------------------------------------------------
+            % ----------------------------------------------------------
             % Compute the Ito integral w.r.t this object where
-            % the integrand is a function of time.
-            % -------------------------------------------------------
-            % TODO: Add Stratonovich option
-            %--------------------------------------------------------
+            % the integrand is a function of time starting from t = 0.
+            % ----------------------------------------------------------
 
-            % TODO: Assign optional arguments
-            if ~isempty(varargin)
-                if length(varargin) >= 1
-                    isIto = false;
-                    % compute Stratonovich correction
-                end
-            else
-                isIto = true;
-            end
-            
             % Ito integral
-            W = sum(integrand .* obj.dW);
-            err = abs(W - 0.5 * (obj.path(end)^2 - obj.T));
+            if (IsStratonovich == true)
+                integrandMid = zeros(obj.L);
 
-            % TODO: Stratonovich correction
-            if ~isIto
+                for i = 1:obj.L
+                    integrandMid(i) = 0.5 * (integrand(i) + integrand(i+1));
+                end
+
+                W = sum(integrandMid .* obj.dW);
+            else
+                W = sum(integrand .* obj.dW);
             end
+
+            err = abs(W - 0.5 * (obj.path(end)^2 - obj.T));
         end
 
         function obj = fill(obj, varargin)
